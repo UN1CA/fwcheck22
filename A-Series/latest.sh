@@ -17,16 +17,12 @@ done
 declare -A csc_files
 csc_files["AUT"]="aut.txt"
 csc_files["EUX"]="eux.txt"
-csc_files["DBT"]="dbt.txt"
-csc_files["BTB"]="btb.txt"
-csc_files["VIP"]="vip.txt"
-csc_files["KOO"]="koo.txt"
-csc_files["SKC"]="koo.txt"
-csc_files["KTC"]="koo.txt"
-csc_files["LUC"]="koo.txt"
+csc_files["XEF"]="xef.txt"
+
 
 # Function to process each model
 process_model() {
+cd ..
     csc=$1
     model=$2
     latest_version=$(curl --retry 5 --retry-delay 5 "http://fota-cloud-dn.ospserver.net/firmware/$csc/$model/version.xml" | grep latest | sed 's/^[^>]*>//' | sed 's/<.*//')
