@@ -3,9 +3,6 @@
 # Log file
 log_file=~/fw.log
 
-# JSON file containing the models and CSCs
-json_file="valid_combinations.json"
-
 # Use getopts for command line arguments
 while getopts ":m:" opt; do
   case ${opt} in
@@ -18,6 +15,27 @@ while getopts ":m:" opt; do
       ;;
   esac
 done
+
+# CSC codes and their corresponding files
+declare -A csc_files
+csc_files["AUT"]="eux.txt"
+csc_files["EUX"]="eux.txt"
+csc_files["DBT"]="eux.txt"
+csc_files["BTB"]="eux.txt"
+csc_files["VIP"]="eux.txt"
+csc_files["KOO"]="koo.txt"
+csc_files["SKC"]="koo.txt"
+csc_files["KTC"]="koo.txt"
+csc_files["LUC"]="koo.txt"
+csc_files["TMK"]="tmk.txt"
+csc_files["TMB"]="tmk.txt"
+csc_files["DSH"]="tmk.txt"
+csc_files["DSA"]="tmk.txt"
+csc_files["ATT"]="tmk.txt"
+csc_files["VZW"]="tmk.txt"
+csc_files["SPR"]="tmk.txt"
+csc_files["XID"]="eux.txt"
+csc_files["TUR"]="eux.txt"
 
 # Temporary file for processing commands
 cmd_file=$(mktemp)
@@ -58,13 +76,17 @@ export -f process_model
 # Start timer
 start_time=$(date +%s)
 
-# Process JSON file and generate all CSC-model pairs
+# Generate all CSC-model pairs
 csp_model_list=$(mktemp)
-for csc in $(jq -r 'keys[]' "$json_file"); do
-    # Extract models for the given CSC
-    models=$(jq -r ".\"$csc\" | keys[]" "$json_file")
+for csc in "${!csc_files[@]}"; do
+    csc_file=${csc_files[$csc]}
+    
+    if [ ! -f "$csc_file" ]; then
+        echo "log:$csc_file not found for CSC $csc" | tee -a "$log_file"
+        continue
+    fi
 
-    for model in $models; do
+    grep -vE '^#|^$' "$csc_file" | while read -r model; do
         echo "$csc $model"
     done
 done > "$csp_model_list"
@@ -95,6 +117,7 @@ done < "$cmd_file"
 
 # Push changes once at the end
 git push
+
 
 # Cleanup temporary files
 rm "$cmd_file" "$csp_model_list"
